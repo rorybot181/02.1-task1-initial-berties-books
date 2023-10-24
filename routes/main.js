@@ -1,5 +1,5 @@
 module.exports = function(app, shopData) {
-
+    
 
     // Handle our routes
     app.get('/',function(req,res){
@@ -54,7 +54,7 @@ module.exports = function(app, shopData) {
         res.send(result);
                                                                            
     }); 
-    app.get('/list', function(req, res) {
+    app.get('/list', redirectLogin, function (req, res) {
         let sqlquery = "SELECT * FROM books"; // query database to get all the books
         // execute sql query
         db.query(sqlquery, (err, result) => {
@@ -64,6 +64,20 @@ module.exports = function(app, shopData) {
             let newData = Object.assign({}, shopData, {availableBooks:result});
             console.log(newData)
             res.render("list.ejs", newData)
+         });
+    });
+
+    app.get('/listusers', function(req, res) {
+        
+        let sqlquery = "SELECT * FROM users"; // query database to get all the users
+        // execute sql query
+        db.query(sqlquery, (err, result) => {
+            if (err) {
+                res.redirect('./'); 
+            }
+            let newData = Object.assign({}, shopData, {availableusers:result});
+            console.log(newData)
+            res.render("listusers.ejs", newData)
          });
     });
 
@@ -85,6 +99,42 @@ module.exports = function(app, shopData) {
              });
        });    
 
+       app.get('/login', function (req, res) {
+        res.render('login.ejs', shopData);
+     });
+ 
+     app.post('/loggedin', function (req,res) {
+           // saving data in database
+           let sqlquery = "INSERT INTO users (username, password) VALUES (?,?)";
+           // execute sql query
+            // Compare the password supplied with the password in the database
+            bcrypt.compare(req.body.password, hashedPassword, function(err, result) {
+                if (err) {
+                    res.send(' WRONG! check your login details')
+                }
+                else if (result == true) {
+                    res.send(' your now logged in as ' + req.body.username)
+                    // Save user session here, when login is successful
+                    req.session.userId = req.body.username;
+
+                }
+                else {
+                    res.send(' WRONG! check your login details')
+                }
+            });
+
+       });  
+
+    app.get('/logout', redirectLogin, (req,res) => {
+        req.session.destroy(err => {
+        if (err) {
+          return res.redirect('./')
+        }
+        res.send('you are now logged out. <a href='+'./'+'>Home</a>');
+        })
+    })
+
+
        app.get('/bargainbooks', function(req, res) {
         let sqlquery = "SELECT * FROM books WHERE price < 20";
         db.query(sqlquery, (err, result) => {
@@ -96,5 +146,13 @@ module.exports = function(app, shopData) {
           res.render("bargains.ejs", newData)
         });
     });       
+
+    const redirectLogin = (req, res, next) => {
+        if (!req.session.userId ) {
+          res.redirect('./login')
+        } else { next (); }
+    }
+
+    
 
 }

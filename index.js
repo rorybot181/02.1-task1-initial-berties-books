@@ -2,6 +2,7 @@
 var express = require ('express')
 var ejs = require('ejs')
 var bodyParser= require ('body-parser')
+var session = require ('express-session');
 const mysql = require('mysql');
 
 // Create the express application object
@@ -48,3 +49,13 @@ require("./routes/main")(app, shopData);
 
 // Start the web app listening
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+
+// Create a session
+app.use(session({
+    secret: 'somerandomstuff',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        expires: 600000
+    }
+}));
