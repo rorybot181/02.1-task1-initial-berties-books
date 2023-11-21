@@ -4,6 +4,7 @@ var ejs = require('ejs')
 var bodyParser= require ('body-parser')
 var session = require ('express-session');
 const mysql = require('mysql');
+var validator = require ('express-validator');
 
 // Create the express application object
 const app = express()

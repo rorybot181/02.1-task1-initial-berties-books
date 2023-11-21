@@ -125,6 +125,30 @@ module.exports = function(app, shopData) {
 
        });  
 
+    app.get('/weather', function(req,res){
+        const request = require('request');
+          
+        let apiKey = '602fbb6c1ae37236f438c23b15c2bc33';
+        let city = 'london';
+        let url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`
+                     
+        request(url, function (err, response, body) {
+          if(err){
+            console.log('error:', error);
+          } else {
+            //res.send(body);
+            var weather = JSON.parse(body)
+            var wmsg = 'It is '+ weather.main.temp + 
+            ' degrees in '+ weather.name +
+            '! <br> The humidity now is: ' + 
+            weather.main.humidity;
+            res.send (wmsg);
+
+          } 
+        });
+
+    } )
+
     app.get('/logout', redirectLogin, (req,res) => {
         req.session.destroy(err => {
         if (err) {
@@ -152,6 +176,21 @@ module.exports = function(app, shopData) {
           res.redirect('./login')
         } else { next (); }
     }
+
+    app.get('/api', function (req,res) {
+
+        // Query database to get all the books
+        let sqlquery = "SELECT * FROM books"; 
+
+        // Execute the sql query
+        db.query(sqlquery, (err, result) => {
+            if (err) {
+                res.redirect('./');
+            }
+            // Return results as a JSON object
+            res.json(result); 
+        });
+    });
 
     
 
